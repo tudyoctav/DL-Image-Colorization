@@ -54,7 +54,7 @@ def chroma_error_ratio(image1, image2, display=False):
         diff1[:, :, 2] = 0
         diff1 = cv2.cvtColor(diff1, cv2.COLOR_YUV2BGR)
         cv2.imshow("U difference in BGR", diff1)
-        cv2.imshow("U difference", u_diff.reshape((h,w)))
+        # cv2.imshow("U difference", u_diff.reshape((h,w)))
         # Create a new figure and plot the data
         fig1, ax1 = plt.subplots()
         im1 = ax1.imshow(u_diff.reshape((h,w)))
