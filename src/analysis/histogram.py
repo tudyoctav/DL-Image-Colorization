@@ -52,7 +52,7 @@ if __name__ == '__main__':
     red_channel = color_image[:, :, 2]
 
     # Black & White image histogram
-    show_histogram(gray_image)
+    show_histogram(gray_image, 'b&w', 255)
 
     # All color channels
     show_histogram(blue_channel, '_blue')
