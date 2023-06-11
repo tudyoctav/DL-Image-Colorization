@@ -132,8 +132,10 @@ class SIGGRAPHGenerator(BaseColor):
     def forward(self, input_A, input_B=None, mask_B=None):
         if(input_B is None):
             input_B = torch.cat((input_A*0, input_A*0), dim=1)
+            print("lala",input_B.shape)
         if(mask_B is None):
             mask_B = input_A*0
+            print(mask_B.shape)
 
         conv1_2 = self.model1(torch.cat((self.normalize_l(input_A),self.normalize_ab(input_B),mask_B),dim=1))
         conv2_2 = self.model2(conv1_2[:,:,::2,::2])
