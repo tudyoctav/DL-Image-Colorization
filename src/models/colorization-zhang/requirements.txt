@@ -1,0 +1,6 @@
+# torch
+scikit-image
+numpy
+matplotlib
+# argparse - use conda install -c conda-forge argparse
+Pillow
