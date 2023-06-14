@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
@@ -41,24 +43,36 @@ def histogram_equalization(bnw_image, plot_name='original_and_equalized_image'):
 
 if __name__ == '__main__':
     print("Histogram methods!")
-    # for i in range(1, 9):
-    image_ind = 9
-    color_image = cv2.imread("data/initial_color/polaroids/p" + str(image_ind) + ".jpg", cv2.IMREAD_COLOR)
-    gray_image = cv2.imread("data/initial_color/polaroids/p" + str(image_ind) + ".jpg", cv2.IMREAD_GRAYSCALE)
-    # cv2.imshow("color_image", color_image)
-    # cv2.waitKey(0)
-    blue_channel = color_image[:, :, 0]
-    green_channel = color_image[:, :, 1]
-    red_channel = color_image[:, :, 2]
+    # path_to_images_folder = os.path.join("..", "..", "data", "octav_images")
+    path_to_images_folder = os.path.join("..", "..", "data", "generated", "gradients_28x28  ")
+    for image_ind, file in enumerate(os.listdir(path_to_images_folder)):
+        input_im_path = os.path.join(path_to_images_folder, file)
+        print(input_im_path)
 
-    # Black & White image histogram
-    show_histogram(gray_image, 'b&w', 255)
+        # image_ind = 9
+        color_image = cv2.imread(input_im_path, cv2.IMREAD_COLOR)
+        gray_image = cv2.imread(input_im_path, cv2.IMREAD_GRAYSCALE)
+        # cv2.imshow("color_image", color_image)
+        # cv2.waitKey(0)
+        blue_channel = color_image[:, :, 0]
+        green_channel = color_image[:, :, 1]
+        red_channel = color_image[:, :, 2]
 
-    # All color channels
-    show_histogram(blue_channel, '_blue')
-    show_histogram(green_channel, '_green')
-    show_histogram(red_channel, '_red')
+        cv2.imshow("color_image", color_image)
+        cv2.imshow("blue_channel", blue_channel)
+        cv2.imshow("green_channel", green_channel)
+        cv2.imshow("red_channel", red_channel)
+        cv2.imshow("gray_image", gray_image)
+        cv2.waitKey(0)
 
-    equalized = histogram_equalization(gray_image)
-    cv2.imwrite("data/equalized/p"+str(image_ind)+".png", equalized)
-    show_histogram(equalized, 'equalized', 255)
+        # Black & White image histogram
+        # show_histogram(gray_image, 'b&w', 255)
+
+        # # All color channels
+        # show_histogram(blue_channel, '_blue')
+        # show_histogram(green_channel, '_green')
+        # show_histogram(red_channel, '_red')
+        #
+        # equalized = histogram_equalization(gray_image)
+        # cv2.imwrite("data/equalized/p"+str(image_ind)+".png", equalized)
+        # show_histogram(equalized, 'equalized', 255)
