@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+import glob
 # define the function to compute MSE between two images
 def mse(img1, img2):
     h, w = img1.shape
@@ -40,6 +41,7 @@ def chroma_error_ratio(image1, image2, display=False):
     # Return U and V channels as one-dimensional arrays
 
     # I think the float(h*w) cancels out, but included for consistency with the paper
+    assert len(u_k) == h * w, "U channel has incorrect dimensions"
     numerator = np.sum(np.square(u_k) + np.square(v_k)) / (float(h*w))
     u_diff = u_i - u_k
     v_diff = v_i - v_k
@@ -53,7 +55,7 @@ def chroma_error_ratio(image1, image2, display=False):
         diff1[:, :, 1] = np.reshape(u_diff, (h,w))
         diff1[:, :, 2] = 0
         diff1 = cv2.cvtColor(diff1, cv2.COLOR_YUV2BGR)
-        cv2.imshow("U difference in BGR", diff1)
+        # cv2.imshow("U difference in BGR", diff1)
         # cv2.imshow("U difference", u_diff.reshape((h,w)))
         # Create a new figure and plot the data
         fig1, ax1 = plt.subplots()
@@ -68,7 +70,7 @@ def chroma_error_ratio(image1, image2, display=False):
         diff2[:, :, 1] = 0
         diff2[:, :, 2] = np.reshape(v_diff, (h,w))
         diff2 = cv2.cvtColor(diff2, cv2.COLOR_YUV2BGR)
-        cv2.imshow("v difference in BGR", diff2)
+        # cv2.imshow("v difference in BGR", diff2)
         pixel_plot_v = plt.imshow(v_diff.reshape((h,w)))
         # Create a new figure and plot the data
         fig2, ax2 = plt.subplots()
@@ -84,23 +86,27 @@ def chroma_error_ratio(image1, image2, display=False):
         diff[:, :, 1] = np.reshape(u_diff, (h,w))
         diff[:, :, 2] = np.reshape(v_diff, (h,w)) 
         diff = cv2.cvtColor(diff.astype('uint8'), cv2.COLOR_YUV2BGR)
-        cv2.imshow("Colour difference in BGR", diff)
+        # cv2.imshow("Colour difference in BGR", diff)
         
-        plt.show(block=False)
+        # plt.show(block=False)
     
     return result
 
 
 def calculate_difference(image1, image2, display=False):
     if image1.shape[0] != image2.shape[0] or image1.shape[1] != image2.shape[1]:
+        exit("Images must have the same dimensions")
         print("Resizing the images to match")
         image1 = cv2.resize(image1,(image2.shape[1], image2.shape[0]))
     if display:
         cv2.imshow("Input image", image1)
         cv2.imshow("Output image", image2)
-    print("Grayscale squared error rate:", grayscale_squared_error_rate(image1, image2, display=display))
-    print("Chroma error ratio (CER):", chroma_error_ratio(image1, image2, display=display))
-
+    ger = grayscale_squared_error_rate(image1, image2, display=display)
+    cer = chroma_error_ratio(image1, image2, display=display)
+    print("Grayscale squared error rate:", ger)
+    print("Chroma error ratio (CER):", cer)
+    return ger, cer
+    
 def main():
     parser = argparse.ArgumentParser(description='Extract U and V channels from two images.')
     parser.add_argument('image1', help='Path to the first input image')
@@ -120,8 +126,34 @@ def main():
 
     calculate_difference(image1, image2, display=True)
     print("Press any key inside the figures...")
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
+def run_comparison():
+    input_folder = "..\..\data\imgs\\"
+
+    filenames = glob.glob(input_folder + "*.jpg")
+    print(filenames)
+    result1 = []
+    result2 = []
+    for filename in filenames:
+        input = cv2.imread(filename)
+        image1 = cv2.imread(filename)
+        row1 = []
+        row2 = []
+        for model in ["_eccv16.png", "_siggraph17.png", "_deoldify.png" , "_iColoriT.png","_siggraph17_hints_out.png", "_iColoriT_hints.png", "_color2embed.png"]:
+            image2 = cv2.imread(filename.replace("imgs","imgs_out").replace(".jpg", model))
+            ger, cer = calculate_difference(image1, image2, display=True)
+            row1.append(ger)
+            row2.append(cer)
+            print("Press any key inside the figures...")
+        result1.append(row1)
+        result2.append(row2)
+        print(f"Results for {filename}:")
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    np.set_printoptions(precision=3, suppress=True)
+    print("Grayscale squared error rate:", np.array(result1))
+    print("Chroma error ratio (CER):", np.array(result2))
 if __name__ == '__main__':
-    main()
+    run_comparison()

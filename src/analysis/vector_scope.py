@@ -216,7 +216,7 @@ def draw_pixel(result_img,center_x,center_y,radius,bgr):
     cv2.circle(result_img, (x,y), dot_radius,col,-1)
     
 
-def plot_vector_scope(image, filename = "result.txt"):
+def plot_vector_scope(image, filename = "result.txt", prefix = "data"):
     # image = cv2.imread(filename)
     height, width, depth = image.shape
     print("width=",width," height=",height," depth=",depth)
@@ -245,19 +245,42 @@ def plot_vector_scope(image, filename = "result.txt"):
     # background
     draw_backgroud(result_img,center_x,center_y,radius)
 
-    name1 = f"data/vectorscopes/{filename}.png"
+    name1 = f"{prefix}/vectorscopes/{filename}.png"
     cv2.imwrite(name1, result_img)
-    if image.shape > result_img.shape:
+    print(f"image size = {image.shape}, result_img size = {result_img.shape}")
+    print(f"image size = {image.shape[0] < result_img.shape[0]} and {image.shape[1] <= result_img.shape[1]}")
+    if image.shape[0] >= result_img.shape[0] and image.shape[1] >= result_img.shape[1]:
+        print("first")
         pad_width = (image.shape[0] - result_img.shape[0]) 
         pad_height = (image.shape[1] - result_img.shape[1])
+        print(pad_width, pad_height)
         result_img = np.pad(result_img, ((pad_width // 2, pad_width - pad_width // 2), (pad_height // 2, pad_height - pad_height // 2), (0, 0)), 'constant', constant_values=0)
-    else:
+    elif image.shape[0] < result_img.shape[0] and image.shape[1] < result_img.shape[1]:
+        print("second")
         pad_width = (result_img.shape[0] - image.shape[0])
         pad_height = (result_img.shape[1] - image.shape[1])
+        print(pad_width, pad_height)
         image = np.pad(image, ((pad_width // 2, pad_width - pad_width // 2), (pad_height // 2, pad_height - pad_height // 2), (0, 0)), 'constant', constant_values=0)
+    elif image.shape[0] >= result_img.shape[0] and image.shape[1] <= result_img.shape[1]:
+        print("third")
+        pad_width = (image.shape[0] - result_img.shape[0])
+        pad_height = (result_img.shape[1] - image.shape[1])
+        print(pad_width, pad_height)
+        result_img = np.pad(result_img, ((pad_width // 2, pad_width - pad_width // 2), (0, 0), (0, 0)), 'constant', constant_values=0)
+        image = np.pad(image, ((0 , 0), (pad_height // 2, pad_height - pad_height // 2), (0, 0)), 'constant', constant_values=0)
+    else:
+        print("last")
+        pad_width = (result_img.shape[0] - image.shape[0])
+        pad_height = (image.shape[1] - result_img.shape[0])
+        print(pad_width, pad_height)
+        result_img = np.pad(result_img, ((0 , 0), (pad_height // 2, pad_height - pad_height // 2), (0, 0)), 'constant', constant_values=0)
+        image = np.pad(image, ((pad_width // 2, pad_width - pad_width // 2), (0, 0), (0, 0)), 'constant', constant_values=0)
+        
+
     numpy_horizontal_concat = np.concatenate((image, result_img), axis=1)
-    name2 = f"data/vectorscopes_and_inputs/{filename}.png"
+    name2 = f"{prefix}/vectorscopes_and_inputs/{filename}.png"
     cv2.imwrite(name2, numpy_horizontal_concat)
+    # cv2.imshow("result", numpy_horizontal_concat)
 
 # import a image file
 def main():
@@ -269,15 +292,17 @@ def main():
     else:
         user_input = argvs[1]
     
-    pattern = f"data/mirflicker/{user_input}.jpg"
+    prefix = "data/imgs_out"
+    pattern = f"{prefix}/{user_input}.png"
     print(f"Searched pattern: {pattern}")
-    filenames = sorted(glob.glob(pattern), key=os.path.getmtime)
+    filenames = glob.glob(pattern)
 
     print(f"Found {len(filenames)} files")
     for filename in filenames:
         image = cv2.imread(filename)
         filename = filename.split("\\")[-1].replace(".jpg", "").replace(".png", "").replace(".jpeg", "")
-        plot_vector_scope(image, filename)
+        print(f"Processing {filename}")
+        plot_vector_scope(image, filename, prefix=prefix)
 
 if __name__ == '__main__':
     main()
